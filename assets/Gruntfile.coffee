@@ -2,6 +2,7 @@ module.exports = (grunt)->
   
   grunt.task.loadNpmTasks 'grunt-contrib-connect'
   grunt.task.loadNpmTasks 'grunt-open'
+  grunt.task.loadNpmTasks 'grunt-contrib-sass'
   grunt.task.loadNpmTasks "grunt-contrib-concat"
   grunt.task.loadNpmTasks "grunt-contrib-coffee"
   grunt.task.loadNpmTasks "grunt-contrib-watch"
@@ -27,12 +28,19 @@ module.exports = (grunt)->
         files: "files/*.html"
         tasks: []
       sass:
-        files: "files/sass/*.scss"
+        files: "files/scss/*.scss"
         tasks: ["compass"]
-      scripts:
+      coffee:
         files: "files/coffee/*.coffee"
         tasks: [
           "coffee"
+          "concat"
+          "uglify"
+          "copy"
+        ]
+      javascript:
+        files: "files/js/*.js"
+        tasks: [
           "concat"
           "uglify"
           "copy"
@@ -56,24 +64,38 @@ module.exports = (grunt)->
         options:
           bare: true
     concat:
-        dist:
-          src: [
-            "files/js/index.js",
-          ]
-          dest: "files/js/test.js"
+      login:
+        src: [
+          "files/js/lib/index.js",
+        ]
+        dest: "files/js/login.js"
     uglify:
+      index:
+        src:'files/js/index.js'
+        dest:'../media/js/index.min.js'
+      login:
+        src:'files/js/login.js'
+        dest:'../media/js/login.min.js'
+    sass:
       dist:
-        src:'files/js/test.js'
-        dest:'files/js/test.min.js'
+        options:
+          style: 'expanded'
+          compass: true
+        files:
+          '../media/css/login.min.css': 'files/scss/login.scss'
+          '../media/css/index.min.css': 'files/scss/index.scss'
     copy:
       js:
         files: [
           expand: true
           cwd: 'files/js/'
-          src: ['index.js']
+          src: [
+            'index.js',
+            'login.js'
+          ]
           dest: '../media/js'
         ]
 
-  grunt.registerTask('default', ['watch','compass','concat','uglify','coffee', 'copy'])
+  grunt.registerTask('default', ['watch','compass','coffee','concat','uglify','sass','copy'])
   grunt.registerTask 'build', 'build task.', () ->
-    grunt.task.run('compass', 'coffee', 'concat', 'uglify', 'copy')
+    grunt.task.run('compass','coffee','concat','uglify','sass','copy')
